@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Detection & Recognition System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1 class="app-title">Face Detection & Recognition System</h1>
+            <div class="header-badges">
+                <span id="badge-api" class="badge badge-warning">● Backend: Connecting...</span>
+                <span id="badge-db" class="badge badge-info">● Registered: 0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- App Body Layout -->
+    <div class="app-body">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="nav-title">NAVIGATION</div>
+            <button class="nav-btn active" data-tab="dashboard">
+                <span class="nav-icon">📊</span> Dashboard
+            </button>
+            <button class="nav-btn" data-tab="live">
+                <span class="nav-icon">🎥</span> Live Recognition
+            </button>
+            <button class="nav-btn" data-tab="detect">
+                <span class="nav-icon">🖼️</span> Detect in Image
+            </button>
+            <button class="nav-btn" data-tab="register">
+                <span class="nav-icon">👤</span> Register Person
+            </button>
+            <button class="nav-btn" data-tab="people">
+                <span class="nav-icon">🗂️</span> Registered People
+            </button>
+        </nav>
+
+        <!-- Main View Area -->
+        <main class="main-content">
+            <!-- TAB 1: DASHBOARD -->
+            <section id="tab-dashboard" class="tab-page active">
+                <h2 class="page-title">System Overview</h2>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card card-blue">
+                        <div class="metric-label">Registered Identities</div>
+                        <div class="metric-value" id="dash-count-people">0</div>
+                    </div>
+                    <div class="metric-card card-green">
+                        <div class="metric-label">Backend Status</div>
+                        <div class="metric-value" id="dash-backend-status">Checking...</div>
+                    </div>
+                    <div class="metric-card card-purple">
+                        <div class="metric-label">AI Engine</div>
+                        <div class="metric-value">YuNet + SFace</div>
+                    </div>
+                </div>
+
+                <div class="card card-actions">
+                    <h3 class="card-title">Quick Actions</h3>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="switchTab('live')">🎥 Launch Live Recognition</button>
+                        <button class="btn btn-secondary" onclick="switchTab('detect')">🖼️ Process Image File</button>
+                        <button class="btn btn-purple" onclick="switchTab('register')">👤 Register New Person</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Registered Users Overview</h3>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Person Name</th>
+                                    <th>Samples Stored</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-table-body">
+                                <tr>
+                                    <td colspan="3" class="text-center">Loading registered users...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: LIVE RECOGNITION -->
+            <section id="tab-live" class="tab-page">
+                <h2 class="page-title">Live Webcam Recognition</h2>
+
+                <div class="toolbar">
+                    <button id="btn-start-cam" class="btn btn-success">▶ Start Camera</button>
+                    <button id="btn-stop-cam" class="btn btn-danger" disabled>⏹ Stop Camera</button>
+                    <button id="btn-switch-cam" class="btn btn-secondary">🔄 Switch Camera</button>
+
+                    <div class="slider-group">
+                        <label for="live-threshold">Cosine Threshold: <span id="live-thresh-val">0.363</span></label>
+                        <input type="range" id="live-threshold" min="0.20" max="0.60" step="0.01" value="0.363">
+                    </div>
+                </div>
+
+                <div class="video-container card">
+                    <video id="webcam-video" autoplay playsinline muted></video>
+                    <canvas id="webcam-canvas"></canvas>
+                    <img id="webcam-annotated" alt="Live Feed Annotations">
+                    <div id="video-placeholder" class="video-placeholder">
+                        <p>Webcam stream is offline.<br>Click <strong>'Start Camera'</strong> above to begin live recognition.</p>
+                    </div>
+                </div>
+
+                <div class="live-footer card">
+                    <span id="live-status-badge" class="badge badge-secondary">Status: Offline</span>
+                    <span id="live-face-count" class="badge badge-info">Faces Detected: 0</span>
+                    <span id="live-names" class="live-names-text">Identities: None</span>
+                </div>
+            </section>
+
+            <!-- TAB 3: DETECT IN IMAGE -->
+            <section id="tab-detect" class="tab-page">
+                <h2 class="page-title">Image Face Detection & Recognition</h2>
+
+                <div class="toolbar">
+                    <label for="img-file-input" class="btn btn-primary cursor-pointer">📁 Select Image File</label>
+                    <input type="file" id="img-file-input" accept="image/*" style="display: none;">
+                    
+                    <button id="btn-save-img" class="btn btn-success" disabled>💾 Download Processed Image</button>
+
+                    <div class="slider-group">
+                        <label for="detect-threshold">Threshold: <span id="detect-thresh-val">0.363</span></label>
+                        <input type="range" id="detect-threshold" min="0.20" max="0.60" step="0.01" value="0.363">
+                    </div>
+                </div>
+
+                <div class="split-view">
+                    <div class="card image-preview-card">
+                        <div id="img-placeholder" class="image-placeholder">
+                            <p>No image loaded.<br>Click <strong>'Select Image File'</strong> above to upload.</p>
+                        </div>
+                        <img id="img-display" class="img-display" alt="Processed Result" style="display: none;">
+                    </div>
+
+                    <div class="card results-card">
+                        <h3 class="card-title">Detection Summary</h3>
+                        <div id="detect-summary-count" class="summary-stat">Total Faces: 0</div>
+                        <div id="detect-results-list" class="results-list">Upload an image to see detection details.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: REGISTER PERSON -->
+            <section id="tab-register" class="tab-page">
+                <h2 class="page-title">Register New Identity</h2>
+
+                <div class="split-view">
+                    <div class="card form-card">
+                        <h3 class="card-title">Registration Form</h3>
+                        
+                        <div class="form-group">
+                            <label for="reg-name-input">Full Name:</label>
+                            <input type="text" id="reg-name-input" class="form-control" placeholder="e.g. Alice Smith">
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="reg-consent-chk">
+                            <label for="reg-consent-chk">I consent to capturing 5 face samples and storing embeddings locally.</label>
+                        </div>
+
+                        <div class="form-actions">
+                            <button id="btn-reg-start-cam" class="btn btn-primary btn-block">📷 Start Camera</button>
+                            <button id="btn-reg-snap" class="btn btn-success btn-block" disabled>📸 Capture Sample (<span id="reg-sample-num">0</span>/5)</button>
+                            <button id="btn-reg-reset" class="btn btn-secondary btn-block" disabled>🔄 Reset Samples</button>
+                            <button id="btn-reg-cancel" class="btn btn-danger btn-block" disabled>❌ Cancel</button>
+                        </div>
+
+                        <div id="reg-status-msg" class="status-box">Enter full name, check consent, then start camera.</div>
+                    </div>
+
+                    <div class="card reg-video-card">
+                        <div class="video-container">
+                            <video id="reg-video" autoplay playsinline muted></video>
+                            <canvas id="reg-canvas" style="display:none;"></canvas>
+                            <div id="reg-placeholder" class="video-placeholder">
+                                <p>Camera registration preview will appear here.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: REGISTERED PEOPLE -->
+            <section id="tab-people" class="tab-page">
+                <h2 class="page-title">Manage Registered Identities</h2>
+
+                <div class="toolbar">
+                    <button id="btn-refresh-people" class="btn btn-primary">🔄 Refresh List</button>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Person Name</th>
+                                    <th>Face Samples Stored</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="people-table-body">
+                                <tr>
+                                    <td colspan="3" class="text-center">Loading people...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Admin Key Modal for Delete -->
+    <div id="admin-modal" class="modal" style="display: none;">
+        <div class="modal-content card">
+            <h3 class="modal-title">Admin Authentication Required</h3>
+            <p>Please enter the administrative API Secret Key to delete identity:</p>
+            <input type="password" id="admin-key-input" class="form-control" placeholder="Enter API Secret Key">
+            <div class="modal-actions">
+                <button id="btn-confirm-delete" class="btn btn-danger">Delete Identity</button>
+                <button id="btn-close-modal" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
