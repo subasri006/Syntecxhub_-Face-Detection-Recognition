@@ -6,7 +6,8 @@
 const CONFIG = {
     // Replace this URL with your deployed Render backend URL when deploying to Vercel
     // e.g., 'https://syntecxhub-face-recognition-backend.onrender.com'
-    RENDER_BACKEND_URL: 'https://syntecxhub-face-recognition-backend.onrender.com',
+    ```javascript
+RENDER_BACKEND_URL: 'https://syntecxhub-face-detection-recognition.onrender.com',
 
     DEFAULT_THRESHOLD: 0.363,
     FRAME_CAPTURE_INTERVAL_MS: 350,
